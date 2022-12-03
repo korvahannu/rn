@@ -92,7 +92,10 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
                     return CommandType::RemoveNoteFromFile(note_filename.to_string(), result);
                 }
                 Err(_) => {
-                    return CommandType::Error(format!("Unable to parse string to id: {}", args[4]));
+                    return CommandType::Error(format!(
+                        "Unable to parse string to id: {}",
+                        args[4]
+                    ));
                 }
             }
         }
@@ -109,7 +112,10 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
                     return CommandType::EditNoteInFile(note_filename.to_string(), result);
                 }
                 Err(_) => {
-                    return CommandType::Error(format!("Unable to parse string to id: {}", args[4]));
+                    return CommandType::Error(format!(
+                        "Unable to parse string to id: {}",
+                        args[4]
+                    ));
                 }
             }
         }
@@ -134,4 +140,35 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
     }
 
     CommandType::AddNoteToFile(note_filename.to_string(), second_argument.to_string())
+}
+
+#[allow(unused_variables)]
+
+mod parse_command_type_tests {
+    #[allow(unused_imports)]
+    use crate::parsearguments::{parse_command_type, CommandType};
+
+    #[test]
+    fn parse_command_type_tests() -> Result<(), &'static str> {
+        let args: Vec<String> = vec![
+            String::from("rn"),
+            String::from("remove"),
+            String::from("notefile"),
+        ];
+
+        let result = parse_command_type(args);
+
+        match result {
+            CommandType::RemoveNoteFile(x) => {
+                if x.eq("notefile") {
+                    Ok(())
+                } else {
+                    Err("Not ok")
+                }
+            }
+            _ => {
+                return Err("Not ok");
+            }
+        }
+    }
 }
