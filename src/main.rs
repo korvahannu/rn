@@ -1,7 +1,7 @@
 mod parsearguments;
 mod rntool;
 
-extern  crate dirs;
+extern crate dirs;
 
 use parsearguments::{rn_get_command_type, CommandType};
 use rntool::RnTool;
@@ -9,10 +9,10 @@ use std::env::{self};
 fn main() {
     let args: Vec<String> = env::args().collect();
     let command_type = rn_get_command_type(args);
-    let homedir =  dirs::home_dir().unwrap();
+    let homedir = dirs::home_dir().unwrap();
 
     // Current working directory is always /home/<user>/.rn/
-    let working_directory = format!("{}/.rn", homedir.as_os_str().to_str().unwrap());
+    let working_directory = format!("{}/.rn/", homedir.as_os_str().to_str().unwrap());
 
     match command_type {
         CommandType::Error(x) => {

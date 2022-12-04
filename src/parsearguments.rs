@@ -6,7 +6,7 @@ pub enum CommandType {
 
     ListNotesInFile(String),
     AddNoteToFile(String, String),
-    EditNoteInFile(String, usize),
+    EditNoteInFile(String, usize, String),
     RemoveNoteFromFile(String, usize),
     PrintHelp,
     Error(String),
@@ -97,7 +97,11 @@ pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
 
             match note_id_to_edit {
                 Ok(result) => {
-                    return CommandType::EditNoteInFile(note_filename.to_string(), result);
+                    if args.len() < 5 {
+                        return CommandType::Error(String::from("Too few arguments."));
+                    } else {
+                        return CommandType::EditNoteInFile(note_filename.to_string(), result, args[4].to_string());
+                    }
                 }
                 Err(_) => {
                     return CommandType::Error(format!(
@@ -128,10 +132,10 @@ mod parse_command_type_tests {
 
     #[test]
     fn test_help() {
-        let mut args = fake_args("help", "", "");
+        let mut args = fake_args("help", "", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(result, CommandType::PrintHelp);
-        args = fake_args("h", "", "");
+        args = fake_args("h", "", "", "");
         result = rn_get_command_type(args);
         assert_eq!(result, CommandType::PrintHelp);
         args = vec!["rn".to_string()];
@@ -141,19 +145,19 @@ mod parse_command_type_tests {
 
     #[test]
     fn test_add_notefile() {
-        let mut args = fake_args("notefile", "test note", "");
+        let mut args = fake_args("notefile", "test note", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(
             result,
             CommandType::AddNoteToFile("notefile".to_string(), "test note".to_string())
         );
-        args = fake_args("notefile", "add", "test note");
+        args = fake_args("notefile", "add", "test note", "");
         result = rn_get_command_type(args);
         assert_eq!(
             result,
             CommandType::AddNoteToFile("notefile".to_string(), "test note".to_string())
         );
-        args = fake_args("notefile", "a", "test note");
+        args = fake_args("notefile", "a", "test note", "");
         result = rn_get_command_type(args);
         assert_eq!(
             result,
@@ -163,33 +167,33 @@ mod parse_command_type_tests {
 
     #[test]
     fn test_list_notefiles() {
-        let mut args = fake_args("list", "", "");
+        let mut args = fake_args("list", "", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNoteFiles);
-        args = fake_args("l", "", "");
+        args = fake_args("l", "", "", "");
         result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNoteFiles);
     }
 
     #[test]
     fn test_list_notes_in_notefiles() {
-        let mut args = fake_args("notefile", "list", "");
+        let mut args = fake_args("notefile", "list", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
-        args = fake_args("notefile", "l", "");
+        args = fake_args("notefile", "l", "", "");
         result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
     }
 
     #[test]
     fn test_remove_note_from_notefile() {
-        let mut args = fake_args("notefile", "remove", "5");
+        let mut args = fake_args("notefile", "remove", "5", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(
             result,
             CommandType::RemoveNoteFromFile("notefile".to_string(), 5)
         );
-        args = fake_args("notefile", "r", "5");
+        args = fake_args("notefile", "r", "5", "");
         result = rn_get_command_type(args);
         assert_eq!(
             result,
@@ -199,29 +203,29 @@ mod parse_command_type_tests {
 
     #[test]
     fn test_edit_note_in_notefile() {
-        let mut args = fake_args("notefile", "edit", "5");
+        let mut args = fake_args("notefile", "edit", "5", "new note content");
         let mut result = rn_get_command_type(args);
         assert_eq!(
             result,
-            CommandType::EditNoteInFile("notefile".to_string(), 5)
+            CommandType::EditNoteInFile("notefile".to_string(), 5, "new note content".to_string())
         );
-        args = fake_args("notefile", "e", "5");
+        args = fake_args("notefile", "e", "5", "new note content");
         result = rn_get_command_type(args);
         assert_eq!(
             result,
-            CommandType::EditNoteInFile("notefile".to_string(), 5)
+            CommandType::EditNoteInFile("notefile".to_string(), 5, "new note content".to_string())
         );
     }
 
     #[test]
     fn test_open_notefile_in_editor() {
-        let mut args = fake_args("open", "notefile", "");
+        let mut args = fake_args("open", "notefile", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(
             result,
             CommandType::OpenNoteFileInEditor("notefile".to_string())
         );
-        args = fake_args("o", "notefile", "");
+        args = fake_args("o", "notefile", "", "");
         result = rn_get_command_type(args);
         assert_eq!(
             result,
@@ -231,20 +235,21 @@ mod parse_command_type_tests {
 
     #[test]
     fn test_remove_notefile() {
-        let mut args = fake_args("remove", "notefile", "");
+        let mut args = fake_args("remove", "notefile", "", "");
         let mut result = rn_get_command_type(args);
         assert_eq!(result, CommandType::RemoveNoteFile("notefile".to_string()));
-        args = fake_args("r", "notefile", "");
+        args = fake_args("r", "notefile", "", "");
         result = rn_get_command_type(args);
         assert_eq!(result, CommandType::RemoveNoteFile("notefile".to_string()));
     }
 
-    fn fake_args(arg1: &str, arg2: &str, arg3: &str) -> Vec<String> {
+    fn fake_args(arg1: &str, arg2: &str, arg3: &str, arg4: &str) -> Vec<String> {
         vec![
             "rn".to_string(),
             arg1.to_string(),
             arg2.to_string(),
             arg3.to_string(),
+            arg4.to_string()
         ]
     }
 }
