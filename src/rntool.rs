@@ -1,6 +1,5 @@
 use std::fs::{self, File, OpenOptions};
 use std::io::{prelude::*, BufReader};
-use std::collections::BTreeSet;
 
 use crate::parsearguments::CommandType;
 

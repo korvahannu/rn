@@ -59,7 +59,7 @@ pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
     }
 
     if args.len() < 3 {
-        return CommandType::Error(String::from("Too few arguments."));
+        return CommandType::ListNotesInFile(first_argument.to_string())
     }
 
     let note_filename = first_argument;
@@ -181,6 +181,9 @@ mod parse_command_type_tests {
         let mut result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
         args = fake_args("notefile", "l", "", "");
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
+        args = vec![String::from("rn"), String::from("notefile")];
         result = rn_get_command_type(args);
         assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
     }
