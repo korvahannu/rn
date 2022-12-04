@@ -1,12 +1,10 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CommandType {
     ListNoteFiles,
-    SearchNoteFile(String),
     RemoveNoteFile(String),
     OpenNoteFileInEditor(String),
 
     ListNotesInFile(String),
-    SearchForNoteFromFile(String, String),
     AddNoteToFile(String, String),
     EditNoteInFile(String, usize),
     RemoveNoteFromFile(String, usize),
@@ -14,12 +12,11 @@ pub enum CommandType {
     Error(String),
 }
 
-pub fn parse_command_type(args: Vec<String>) -> CommandType {
+/// Takes arguments given at bin call and gets what is wanted from the tool
+pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
     let help_args: [String; 2] = [String::from("help"), String::from("h")];
 
     let list_args: [String; 2] = [String::from("list"), String::from("l")];
-
-    let search_args: [String; 2] = [String::from("search"), String::from("s")];
 
     let remove_args: [String; 2] = [String::from("remove"), String::from("r")];
 
@@ -41,15 +38,6 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
 
     if list_args.contains(first_argument) {
         return CommandType::ListNoteFiles;
-    }
-
-    if search_args.contains(first_argument) {
-        if args.len() < 3 {
-            return CommandType::Error(String::from("Too few arguments."));
-        } else {
-            let file_to_search_for = args[2].clone();
-            return CommandType::SearchNoteFile(file_to_search_for);
-        }
     }
 
     if remove_args.contains(first_argument) {
@@ -94,7 +82,7 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
                 Err(_) => {
                     return CommandType::Error(format!(
                         "Unable to parse string to id: {}",
-                        args[4]
+                        args[3]
                     ));
                 }
             }
@@ -121,21 +109,12 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
         }
     }
 
-    if search_args.contains(second_argument) {
-        if args.len() < 4 {
-            return CommandType::Error(String::from("Too few arguments."));
-        } else {
-            let search_keyword = args[3].clone();
-            return CommandType::SearchForNoteFromFile(note_filename.to_string(), search_keyword);
-        }
-    }
-
     if add_args.contains(second_argument) {
         if args.len() < 4 {
             return CommandType::Error(String::from("Too few arguments."));
         } else {
             let note_to_add = args[3].clone();
-            return CommandType::SearchForNoteFromFile(note_filename.to_string(), note_to_add);
+            return CommandType::AddNoteToFile(note_filename.to_string(), note_to_add);
         }
     }
 
@@ -145,30 +124,127 @@ pub fn parse_command_type(args: Vec<String>) -> CommandType {
 #[allow(unused_variables)]
 
 mod parse_command_type_tests {
-    #[allow(unused_imports)]
-    use crate::parsearguments::{parse_command_type, CommandType};
+    use crate::parsearguments::{rn_get_command_type, CommandType};
 
     #[test]
-    fn parse_command_type_tests() -> Result<(), &'static str> {
-        let args: Vec<String> = vec![
-            String::from("rn"),
-            String::from("remove"),
-            String::from("notefile"),
-        ];
+    fn test_help() {
+        let mut args = fake_args("help", "", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::PrintHelp);
+        args = fake_args("h", "", "");
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::PrintHelp);
+        args = vec!["rn".to_string()];
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::PrintHelp);
+    }
 
-        let result = parse_command_type(args);
+    #[test]
+    fn test_add_notefile() {
+        let mut args = fake_args("notefile", "test note", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::AddNoteToFile("notefile".to_string(), "test note".to_string())
+        );
+        args = fake_args("notefile", "add", "test note");
+        result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::AddNoteToFile("notefile".to_string(), "test note".to_string())
+        );
+        args = fake_args("notefile", "a", "test note");
+        result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::AddNoteToFile("notefile".to_string(), "test note".to_string())
+        );
+    }
 
-        match result {
-            CommandType::RemoveNoteFile(x) => {
-                if x.eq("notefile") {
-                    Ok(())
-                } else {
-                    Err("Not ok")
-                }
-            }
-            _ => {
-                return Err("Not ok");
-            }
-        }
+    #[test]
+    fn test_list_notefiles() {
+        let mut args = fake_args("list", "", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::ListNoteFiles);
+        args = fake_args("l", "", "");
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::ListNoteFiles);
+    }
+
+    #[test]
+    fn test_list_notes_in_notefiles() {
+        let mut args = fake_args("notefile", "list", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
+        args = fake_args("notefile", "l", "");
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::ListNotesInFile("notefile".to_string()));
+    }
+
+    #[test]
+    fn test_remove_note_from_notefile() {
+        let mut args = fake_args("notefile", "remove", "5");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::RemoveNoteFromFile("notefile".to_string(), 5)
+        );
+        args = fake_args("notefile", "r", "5");
+        result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::RemoveNoteFromFile("notefile".to_string(), 5)
+        );
+    }
+
+    #[test]
+    fn test_edit_note_in_notefile() {
+        let mut args = fake_args("notefile", "edit", "5");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::EditNoteInFile("notefile".to_string(), 5)
+        );
+        args = fake_args("notefile", "e", "5");
+        result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::EditNoteInFile("notefile".to_string(), 5)
+        );
+    }
+
+    #[test]
+    fn test_open_notefile_in_editor() {
+        let mut args = fake_args("open", "notefile", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::OpenNoteFileInEditor("notefile".to_string())
+        );
+        args = fake_args("o", "notefile", "");
+        result = rn_get_command_type(args);
+        assert_eq!(
+            result,
+            CommandType::OpenNoteFileInEditor("notefile".to_string())
+        );
+    }
+
+    #[test]
+    fn test_remove_notefile() {
+        let mut args = fake_args("remove", "notefile", "");
+        let mut result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::RemoveNoteFile("notefile".to_string()));
+        args = fake_args("r", "notefile", "");
+        result = rn_get_command_type(args);
+        assert_eq!(result, CommandType::RemoveNoteFile("notefile".to_string()));
+    }
+
+    fn fake_args(arg1: &str, arg2: &str, arg3: &str) -> Vec<String> {
+        vec![
+            "rn".to_string(),
+            arg1.to_string(),
+            arg2.to_string(),
+            arg3.to_string(),
+        ]
     }
 }

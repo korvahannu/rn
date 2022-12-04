@@ -1,8 +1,8 @@
 use std::env;
 mod parsearguments;
-use parsearguments::parse_command_type;
+use parsearguments::rn_get_command_type;
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let command_type = parse_command_type(args);
+    let command_type = rn_get_command_type(args);
     println!("{:?}", command_type);
 }
