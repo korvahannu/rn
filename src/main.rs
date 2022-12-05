@@ -21,11 +21,8 @@ fn main() {
         ctype => {
             let rntool = RnTool::new(working_directory, ctype);
 
-            match rntool.execute_command() {
-                Err(x) => {
-                    panic!("Command failed: {}", x)
-                }
-                _ => {}
+            if let Err(x) = rntool.execute_command() {
+                panic!("Command failed: {}", x)
             }
         }
     }

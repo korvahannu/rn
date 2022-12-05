@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum CommandType {
     ListNoteFiles,
     RemoveNoteFile(String),
@@ -59,7 +59,7 @@ pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
     }
 
     if args.len() < 3 {
-        return CommandType::ListNotesInFile(first_argument.to_string())
+        return CommandType::ListNotesInFile(first_argument.to_string());
     }
 
     let note_filename = first_argument;
@@ -100,7 +100,11 @@ pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
                     if args.len() < 5 {
                         return CommandType::Error(String::from("Too few arguments."));
                     } else {
-                        return CommandType::EditNoteInFile(note_filename.to_string(), result, args[4].to_string());
+                        return CommandType::EditNoteInFile(
+                            note_filename.to_string(),
+                            result,
+                            args[4].to_string(),
+                        );
                     }
                 }
                 Err(_) => {
@@ -126,8 +130,8 @@ pub fn rn_get_command_type(args: Vec<String>) -> CommandType {
 }
 
 #[allow(unused_variables)]
-
 mod parse_command_type_tests {
+    #[allow(unused_imports)]
     use crate::parsearguments::{rn_get_command_type, CommandType};
 
     #[test]
@@ -246,13 +250,14 @@ mod parse_command_type_tests {
         assert_eq!(result, CommandType::RemoveNoteFile("notefile".to_string()));
     }
 
+    #[allow(dead_code)]
     fn fake_args(arg1: &str, arg2: &str, arg3: &str, arg4: &str) -> Vec<String> {
         vec![
             "rn".to_string(),
             arg1.to_string(),
             arg2.to_string(),
             arg3.to_string(),
-            arg4.to_string()
+            arg4.to_string(),
         ]
     }
 }
