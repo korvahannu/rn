@@ -159,7 +159,42 @@ impl RnTool {
                 Ok(())
             }
             CommandType::PrintHelp => {
-                println!("This is a work in progress");
+                println!("rn is a simple utility for taking and storing notes using the command line.");
+                println!("");
+                println!("Show help:");
+                println!("rn help");
+                println!("rn h");
+                println!("rn");
+                println!("");
+                println!("Add a new note:");
+                println!("rn <filename> <note>");
+                println!("rn <filename> add <note>");
+                println!("rn <filename> a <note>");
+                println!("");
+                println!("List all notes:");
+                println!("rn list");
+                println!("rn l");
+                println!("");
+                println!("List all entries inside a note file:");
+                println!("rn <filename> list");
+                println!("rn <filename> l");
+                println!("rn <filename>");
+                println!("");
+                println!("Remove an entry from a file:");
+                println!("rn <filename> remove <index>");
+                println!("rn <filename> r <index>");
+                println!("");
+                println!("Edit note:");
+                println!("rn <filename> edit <index> <newtext>");
+                println!("rn <filename> e <index> <newtext>");
+                println!("");
+                println!("Open note file in a text editor:");
+                println!("rn open <filename>");
+                println!("rn o <filename>");
+                println!("");
+                println!("Remove note file and all the notes inside it:");
+                println!("rn remove <filename>");
+                println!("rn r <filename>");
                 Ok(())
             }
             CommandType::Error(error) => Err(error.clone()),
