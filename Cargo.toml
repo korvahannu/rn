@@ -6,5 +6,5 @@ license = "MIT"
 description = "Simple note taking utility intented to use in terminal."
 
 [dependencies]
-dirs = "4.0"
+dirs = "5.0.1"
 edit = "0.1.4"

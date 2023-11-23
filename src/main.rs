@@ -1,11 +1,10 @@
 mod parsearguments;
 mod rntool;
 
-extern crate dirs;
-
 use parsearguments::{rn_get_command_type, CommandType};
 use rntool::RnTool;
 use std::env::{self};
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let command_type = rn_get_command_type(args);
